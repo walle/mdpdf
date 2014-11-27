@@ -1,0 +1,5 @@
+# Ignore the built files
+*.o
+*.a
+*.so*
+mdpdf
