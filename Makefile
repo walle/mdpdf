@@ -1,9 +1,9 @@
 TARGET = mdpdf
-LIBS = -lwkhtmltox -L/lib -lhoedown -L ./
+LIBS = -lwkhtmltox -lhoedown -L ./ -L/usr/lib/x86_64-linux-gnu -lQtWebKit -lQtSvg -lQtXmlPatterns -lQtGui -lQtNetwork -lQtCore -lpthread -lstdc++
 CC = gcc
-CFLAGS=-g -O3 -Wall -Wextra -Wno-unused-parameter -fPIC -ggdb -I/include -Ilib/hoedown
+CFLAGS=-g -O3 -Wall -Wextra -Wno-unused-parameter -fPIC -Ilib/wkhtmltopdf/include -Ilib/hoedown
 LDFLAGS=-g -O3 -Wall -Werror
-OBJLIBS	= libhoedown.a
+OBJLIBS	= libhoedown.a libwkhtmltox.a
 
 .PHONY: default all clean
 
@@ -13,8 +13,15 @@ all: default
 OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
 HEADERS = $(wildcard *.h)
 
-libhoedown.a: force_look
-	cd lib/hoedown; $(MAKE) $(MFLAGS)
+libhoedown.a:
+	cd lib/hoedown; make
+
+lib/wkhtmltopdf:
+	cd lib; git clone --recursive https://github.com/wkhtmltopdf/wkhtmltopdf.git
+
+libwkhtmltox.a: lib/wkhtmltopdf
+	cd lib/wkhtmltopdf; qmake wkhtmltopdf.pro; cd src/lib; make staticlib;
+	cp lib/wkhtmltopdf/bin/libwkhtmltox.a ./
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -26,7 +33,5 @@ $(TARGET): $(OBJECTS) $(OBJLIBS)
 
 clean:
 	-rm -f *.o
+	-rm -f *.a
 	-rm -f $(TARGET)
-
-force_look:
-	true

@@ -3,3 +3,6 @@
 *.a
 *.so*
 mdpdf
+
+# Ignore large wkhtmltopdf repository
+lib/wkhtmltopdf
