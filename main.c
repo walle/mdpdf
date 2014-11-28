@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
   file = argv + optind;
 
   if (n_files == 0) {
-    printf("No OUTPUT supplied\n");
+    fprintf(stderr, "No OUTPUT supplied\n");
     mdpdf_usage(EXIT_FAILURE);
   }
 
@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
   if (t) {
     fclose(t);
     if (!remove_existing_files) {
-      printf("File %s does already exist. Use -f to overwrite it.\n", outname);
+      fprintf(stderr, "File %s does already exist. Use -f to overwrite it.\n", outname);
       mdpdf_usage(EXIT_FAILURE);
     }
   }
