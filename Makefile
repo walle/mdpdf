@@ -35,3 +35,6 @@ clean:
 	-rm -f *.o
 	-rm -f *.a
 	-rm -f $(TARGET)
+
+test: $(TARGET)
+	./run-tests

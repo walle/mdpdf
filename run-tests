@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+
+# Keep track of failures
+FAILED=0
+
+# Remove generated files
+# Does not delete generated files if ENV variable KEEP is set.
+cleanup() {
+  if [ -z "$KEEP" ]; then
+    rm tmp/* > /dev/null 2>&1 # Suppress rm error message if no files exists in tmp
+    rmdir tmp
+  fi
+}
+
+# Output a fail message
+fail() {
+  echo ''
+  echo 'FAIL'
+  echo $1
+  let "FAILED += 1"
+}
+
+# Show progress when tests pass
+pass() {
+  echo -n '.'
+}
+
+# Output a message and return with no error when all tests has passed
+finished() {
+  echo ''
+  if [[ $FAILED -ne 1 ]]; then
+    echo 'All tests passed'
+  else
+    echo 'There were failed tests'
+  fi
+  exit $FAILED
+}
+
+# Create a tmp dir we can output files to
+mkdir tmp
+
+# Test that error message and usage is printed if no output
+./mdpdf > /dev/null 2>&1
+STATUS=$?
+if [[ $STATUS -ne 1 ]]; then
+  fail 'Error message and usage not printed if no output'
+  exit 1
+fi
+pass
+
+# Test that we can convert one file without flags
+./mdpdf README.md tmp/test1.pdf
+if [ ! -f tmp/test1.pdf ]; then
+  fail 'Could not generate one file without flags'
+fi
+pass
+
+# Test that file can not be overwritten without -f flag
+./mdpdf README.md tmp/test1.pdf > /dev/null 2>&1
+STATUS=$?
+if [[ $STATUS -ne 1 ]]; then
+  fail 'Allowed overwriting without -f flag'
+fi
+pass
+
+# Test -f flag
+./mdpdf -f README.md tmp/test1.pdf
+if [ ! -f tmp/test1.pdf ]; then
+  fail 'Could not overwrite with -f flag'
+fi
+pass
+
+# Test -s flag
+echo "body { background: #f00; }" > tmp/style.css
+./mdpdf -s tmp/style.css README.md tmp/test2.pdf
+if [ ! -f tmp/test2.pdf ]; then
+  fail 'Could not use -s flag'
+fi
+pass
+
+# Test that we can convert two files without flags
+./mdpdf README.md README.md tmp/test3.pdf
+if [ ! -f tmp/test3.pdf ]; then
+  fail 'Could not convert two files without flags'
+fi
+pass
+
+# Test -p flag
+./mdpdf -p README.md README.md tmp/test4.pdf
+if [ ! -f tmp/test4.pdf ]; then
+  fail 'Could not convert two files without flags'
+fi
+pass
+
+# Test all flags except -f
+./mdpdf README.md README.md tmp/test5.pdf -p -s tmp/style.css
+if [ ! -f tmp/test5.pdf ]; then
+  fail 'Could not use all flags except -f'
+fi
+pass
+
+# Test all flags
+./mdpdf README.md README.md tmp/test5.pdf -pf -s tmp/style.css
+if [ ! -f tmp/test5.pdf ]; then
+  fail 'Could not use all flags'
+fi
+pass
+
+# Test that stdin is used if no source is supplied
+./mdpdf tmp/test6.pdf <<< "# Header 1 \n\n A paragraph"
+if [ ! -f tmp/test6.pdf ]; then
+  fail 'Could not read from stdin'
+fi
+pass
+
+# We are done and all tests passed
+cleanup
+finished
