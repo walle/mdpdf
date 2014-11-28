@@ -174,7 +174,7 @@ int main(int argc, char **argv) {
   file = argv + optind;
 
   if (n_files == 0) {
-    printf("No INPUT or OUTPUT supplied\n");
+    printf("No OUTPUT supplied\n");
     mdpdf_usage(EXIT_FAILURE);
   }
 
