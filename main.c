@@ -255,11 +255,12 @@ int main(int argc, char **argv) {
 	memset(filePath, 0, sizeof(filePath));
 
 	strncpy(nameBuff, "/tmp/mdpdf-XXXXXX.html", 22);
-	/* Use tmp file to build a file:// path for wkhtml */
-	sprintf(filePath, "file://%s", nameBuff);
 
 	filedesc = mkstemps(nameBuff, 5);
 	FILE *out = fdopen(filedesc, "w");
+
+	/* Use tmp file to build a file:// path for wkhtml */
+	sprintf(filePath, "file://%s", nameBuff);
 
 	/* Write tmp html output to file */
 	write_html_to_file(out, ob, verbose, stylesheet);
@@ -272,6 +273,7 @@ int main(int argc, char **argv) {
 
 /* start pdf generating */
 	generate_pdf(filePath, outname);
+	unlink(nameBuff);
 
 	return EXIT_SUCCESS;
 }
