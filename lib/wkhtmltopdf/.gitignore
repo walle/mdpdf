@@ -1,0 +1,23 @@
+# ignore mac build files
+build/
+*.plist
+*~
+\#*\#
+bin
+wkhtmltopdf.app/
+wkhtmltopdf.xcodeproj/
+release*/
+test/
+static-build/
+.obj/
+doc/
+libdoc/
+man1/
+Makefile
+qrc_wkhtmltopdf.cpp
+Makefile.*
+*_resource.rc
+gitcontrol.bat
+gitcmd.lnk
+*.tar.bz2
+*.pyc

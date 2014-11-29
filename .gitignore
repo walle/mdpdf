@@ -4,5 +4,5 @@
 *.so*
 mdpdf
 
-# Ignore large wkhtmltopdf repository
-lib/wkhtmltopdf
+# Ignore the generated files in wkhtmltopdf
+lib/wkhtmltopdf/**/*.cpp
