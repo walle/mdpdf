@@ -41,32 +41,32 @@ static struct option const long_options[] = {
  * Print usage information and exit with the supplied status.
  */
 void mdpdf_usage (int status) {
-	printf ("\
-	Usage: %s [OPTIONS] SOURCE... OUTPUT\n\
-	",
-	"mdpdf");
-	fputs ("\n\
-	Converts markdown in SOURCE, or multiple SOURCE(s) to PDF in OUTPUT\n\
-	Add css rules with with --stylesheet pointing to a file.\n\n\
-	", stdout);
+printf ("\
+Usage: %s [OPTIONS] SOURCE... OUTPUT\n\
+",
+"mdpdf");
+fputs ("\n\
+Converts markdown in SOURCE, or multiple SOURCE(s) to PDF in OUTPUT\n\
+Add css rules with with --stylesheet pointing to a file.\n\n\
+", stdout);
 
-	fputs ("\
-	-f, --force          overwrite destination files\n\
-	", stdout);
-	fputs ("\
-	-p, --page-break     adds a page break between sources\n\
-	", stdout);
+fputs ("\
+-f, --force          overwrite destination files\n\
+", stdout);
+fputs ("\
+-p, --page-break     adds a page break between sources\n\
+", stdout);
+		fputs ("\
+-s, --stylesheet     add rules in stylesheet\n\
+", stdout);
+		fputs ("\
+-v, --verbose        print generated html\n\
+", stdout);
+		 fputs ("\
+-h, --help           display this help and exit\n\
+", stdout);
 			fputs ("\
-	-s, --stylesheet     add rules in stylesheet\n\
-	", stdout);
-			fputs ("\
-	-v, --verbose        print generated html\n\
-	", stdout);
-			 fputs ("\
-	-h, --help           display this help and exit\n\
-	", stdout);
-				fputs ("\
-	-V, --version        output version information and exit\n\
+-V, --version        output version information and exit\n\
 ", stdout);
 
 	exit(status);
