@@ -1,0 +1,32 @@
+.\" Manpage for mdpdf.
+.\" Contact fredrik.wallgren@gmail.com to correct errors or typos.
+.TH man 1 "29 Nov 2014" "1.0.0" "mdpdf man page"
+.SH NAME
+mdpdf \- convert markdown to PDF
+.SH SYNOPSIS
+.B mdpdf
+[OPTIONS] SOURCE(s)... OUTPUT
+.SH DESCRIPTION
+.B mdpdf
+converts markdown in SOURCE, or multiple SOURCE(s) to PDF in OUTPUT.
+.SH OPTIONS
+.TP
+.BR \-f ", " \-\-force
+Overwrites destination file
+.TP
+.BR \-p ", " \-\-page\-break
+Adds a page break between sources
+.TP
+.BR \-s ", " \-\-stylesheet=\fR \fIFILEPATH\fR
+Adds rules in stylesheet to output
+.TP
+.BR \-v ", " \-\-verbose
+Prints generated html to stdout
+.TP
+.BR \-h ", " \-\-help
+Outputs help information and exists
+.TP
+.BR \-V ", " \-\-version
+Outputs version information and exists
+.SH AUTHOR
+Fredrik Wallgren (fredrik.wallgren@gmail.com)

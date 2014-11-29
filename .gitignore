@@ -3,6 +3,8 @@
 *.a
 *.so*
 mdpdf
+*.tar.gz
+mdpdf-*/*
 
 # Ignore the generated files in wkhtmltopdf
 lib/wkhtmltopdf/**/*.cpp
