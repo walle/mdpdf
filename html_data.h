@@ -9,8 +9,9 @@ static const char *HTML_HEAD_START = QUOTE(
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<style type="text/css">
 			body {
-				font-family: "TrebuchetMS", "Trebuchet MS", "LucidaSansUnicode", "Lucida Sans Unicode", "LucidaSans", "Lucida Sans", Arial, sans-serif;
-				font-size: 12px;
+				font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif;
+				font-size: 16px;
+				line-height: 1.6;
 			}
 
 			.page-break {
