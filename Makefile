@@ -11,13 +11,25 @@ VERSION="1.0.1"
 DIST="$(TARGET)-$(VERSION)"
 DIST_SRC="$(TARGET)-src-$(VERSION)"
 
-.PHONY: default all clean
+.PHONY: default all install uninstall dist dist-src clean clean-dist
 
 default: $(TARGET)
 all: default
 
 OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
 HEADERS = $(wildcard *.h)
+
+html_data.h:
+	-echo "#ifndef HTML_DATA_H" > html_data.h
+	-echo "#define HTML_DATA_H" >> html_data.h
+	-echo "" >> html_data.h
+	-xxd -i HTML_HEAD_START >> html_data.h
+	-echo "" >> html_data.h
+	-xxd -i HTML_HEAD_END >> html_data.h
+	-echo "" >> html_data.h
+	-xxd -i HTML_END >> html_data.h
+	-echo "" >> html_data.h
+	-echo "#endif" >> html_data.h
 
 libhoedown.a:
 	cd lib/hoedown; make libhoedown.a
@@ -27,18 +39,19 @@ libwkhtmltox.a:
 	cd lib/wkhtmltopdf; qmake wkhtmltopdf.pro; make; cd src/lib; make staticlib;
 	cp lib/wkhtmltopdf/bin/libwkhtmltox.a ./
 
-%.o: %.c $(HEADERS)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
-$(TARGET): $(OBJECTS) $(OBJLIBS)
+$(TARGET): html_data.h $(OBJECTS) $(OBJLIBS)
 	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
 
 clean: clean-dist
 	-rm -f *.o
 	-rm -f *.a
 	-rm -f $(TARGET)
+	-rm -f html_data.h
 
 clean-dist:
 	-rm -rf $(DIST)
@@ -66,5 +79,3 @@ dist-src:
 	mkdir $(DIST_SRC)
 	cp -r lib man LICENSE README.md html_data.h main.c run-tests Makefile $(DIST_SRC)
 	tar cfz $(DIST_SRC).tar.gz $(DIST_SRC)
-
-.PHONY: install uninstall dist dist-src clean clean-dist

@@ -6,6 +6,7 @@ mdpdf
 *.tar.gz
 mdpdf-*/*
 tmp/*
+html_data.h
 
 # Ignore the generated files in wkhtmltopdf
 lib/wkhtmltopdf/**/*.cpp
