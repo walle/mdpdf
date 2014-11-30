@@ -26,7 +26,7 @@
 /* Command line flags */
 static bool remove_existing_files;
 static bool page_break_between_sources;
-static char *stylesheet;
+static char *stylesheet_file_path;
 static bool verbose;
 
 static struct option const long_options[] = {
@@ -58,10 +58,10 @@ Add css rules with with --stylesheet pointing to a file.\n\n\
 }
 
 /*
- * Create a pdf from html input.
- * Reads the html file in input and writes a pdf to output.
+ * Create a pdf from html.
+ * Reads the html file in input_html_file_path and writes a pdf to output_pdf_path.
  */
-void generate_pdf(const char *input, const char *output) {
+void generate_pdf(const char *input_html_file_path, const char *output_pdf_path) {
 	wkhtmltopdf_global_settings * gs;
 	wkhtmltopdf_object_settings * os;
 	wkhtmltopdf_converter * conv;
@@ -69,10 +69,10 @@ void generate_pdf(const char *input, const char *output) {
 	wkhtmltopdf_init(false);
 
 	gs = wkhtmltopdf_create_global_settings();
-	wkhtmltopdf_set_global_setting(gs, "out", output);
+	wkhtmltopdf_set_global_setting(gs, "out", output_pdf_path);
 
 	os = wkhtmltopdf_create_object_settings();
-	wkhtmltopdf_set_object_setting(os, "page", input);
+	wkhtmltopdf_set_object_setting(os, "page", input_html_file_path);
 	wkhtmltopdf_set_object_setting(os, "load.loadErrorHandling", "ignore");
 
 	conv = wkhtmltopdf_create_converter(gs);
@@ -107,14 +107,14 @@ void read_file_to_buffer(hoedown_buffer *ib, FILE *in) {
  * Writes the data in the buffer ob to the file out.
  * If stylesheets points to a valid CSS file it's contents will be added to the style of the page.
  */
-void write_html(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet) {
+void write_html(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet_file_path) {
 	fprintf(out, "%s\n", HTML_HEAD_START);
-	if (stylesheet && strlen(stylesheet) > 0) {
-		FILE *s = fopen(stylesheet, "r");
+	if (stylesheet_file_path && strlen(stylesheet_file_path) > 0) {
+		FILE *s = fopen(stylesheet_file_path, "r");
 		if (s == NULL) {
 			fprintf(stderr,
 				"Could not open %s for reading. Skipping user supplied styles.\n",
-				stylesheet);
+				stylesheet_file_path);
 		} else {
 			const int buffer_size = 4096;
 			char buffer[buffer_size];
@@ -147,17 +147,17 @@ const char* get_tmp_dir(void) {
  * Read all markdown input to buffer.
  * Prints error and exists if an error occurs.
  */
-void read_markdown(hoedown_buffer *ib, int n_files, char **file, FILE *in) {
-	if (n_files == 1) { /* Reading from stdin */
+void read_markdown(hoedown_buffer *ib, int number_of_sources, char **file, FILE *in) {
+	if (number_of_sources == 1) { /* Reading from stdin */
 		read_file_to_buffer(ib, in); /* may exit on error reading input */
 		fclose(in);
 	} else {
 		int i;
-		for (i = 0; i < n_files-1; i++) { /* Reading from one or more files */
+		for (i = 0; i < number_of_sources-1; i++) { /* Reading from one or more files */
 			FILE *ir = fopen(file[i], "r");
 			read_file_to_buffer(ib, ir);
 			if (page_break_between_sources) {
-				if (i < n_files-1) {
+				if (i < number_of_sources-1) {
 					hoedown_buffer_puts(ib, MDPDF_PAGE_BREAK);
 				}
 			}
@@ -180,17 +180,17 @@ void render_markdown(hoedown_buffer *ib, hoedown_buffer *ob) {
 
 /*
  * Create a tmp file and write html output to it.
- * Sets the filePath used by wkhtml to read the html.
+ * Sets the tmp_html_file_protocol_path used by wkhtml to read the html.
  */
-void write_html_to_tmp_file(char *nameBuff, char *filePath, hoedown_buffer *ob, bool verbose, char *stylesheet) {
+void write_html_to_tmp_file(char *tmp_html_file_path, char *tmp_html_file_protocol_path, hoedown_buffer *ob, bool verbose, char *stylesheet) {
 	int filedesc = -1;
 	const char *fileRoot = get_tmp_dir();
 
-	snprintf(nameBuff, FILENAME_MAX, "%smdpdf-XXXXXXX.html", fileRoot);
-	filedesc = mkstemps(nameBuff, 5);
+	snprintf(tmp_html_file_path, FILENAME_MAX, "%smdpdf-XXXXXXX.html", fileRoot);
+	filedesc = mkstemps(tmp_html_file_path, 5);
 	FILE *out = fdopen(filedesc, "w");
 
-	sprintf(filePath, "file://%s", nameBuff);
+	sprintf(tmp_html_file_protocol_path, "file://%s", tmp_html_file_path);
 
 	write_html(out, ob, verbose, stylesheet);
 	fclose(out);
@@ -204,14 +204,14 @@ void write_html_to_tmp_file(char *nameBuff, char *filePath, hoedown_buffer *ob, 
 
 int main(int argc, char **argv) {
 	int c = -1;
-	int n_files = 0;
+	int number_of_sources = 0;
 	char **file = NULL;
 	FILE *in = stdin;
-	char *outname = NULL;
+	char *output_pdf_file_path = NULL;
 	hoedown_buffer *ib = hoedown_buffer_new(HOEDOWN_IUNIT);
 	hoedown_buffer *ob = hoedown_buffer_new(HOEDOWN_OUNIT);
-	char nameBuff[FILENAME_MAX] = "";
-	char filePath[FILENAME_MAX] = "";
+	char tmp_html_file_path[FILENAME_MAX] = "";
+	char tmp_html_file_protocol_path[FILENAME_MAX] = "";
 
 	/* Parse arguments */
 	while ((c = getopt_long (argc, argv, "fpvhVs:", long_options, NULL)) != -1) {
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
 			break;
 			case 's':
 				if (optarg)
-					stylesheet = optarg;
+					stylesheet_file_path = optarg;
 			break;
 			case 'v':
 				verbose = true;
@@ -243,32 +243,32 @@ int main(int argc, char **argv) {
 	}
 
 	/* Validate arguments */
-	n_files = argc - optind;
+	number_of_sources = argc - optind;
 	file = argv + optind;
 
-	if (n_files == 0) {
+	if (number_of_sources == 0) {
 		fprintf(stderr, "No OUTPUT supplied\n");
 		mdpdf_usage(EXIT_FAILURE);
 	}
 
-	outname = file[n_files-1];
+	output_pdf_file_path = file[number_of_sources-1];
 
-	FILE *t = fopen(outname, "r");
+	FILE *t = fopen(output_pdf_file_path, "r");
 	if (t) {
 		fclose(t);
 		if (!remove_existing_files) {
-			fprintf(stderr, "File %s does already exist. Use -f to overwrite it.\n", outname);
+			fprintf(stderr, "File %s does already exist. Use -f to overwrite it.\n", output_pdf_file_path);
 			mdpdf_usage(EXIT_FAILURE);
 		}
 	}
 
 	/* Main logic */
-	read_markdown(ib, n_files, file, in);
+	read_markdown(ib, number_of_sources, file, in);
 	render_markdown(ib, ob);
-	write_html_to_tmp_file(nameBuff, filePath, ob, verbose, stylesheet);
-	generate_pdf(filePath, outname);
+	write_html_to_tmp_file(tmp_html_file_path, tmp_html_file_protocol_path, ob, verbose, stylesheet_file_path);
+	generate_pdf(tmp_html_file_protocol_path, output_pdf_file_path);
 
 	/* Cleanup */
-	unlink(nameBuff);
+	unlink(tmp_html_file_path);
 	return EXIT_SUCCESS;
 }
