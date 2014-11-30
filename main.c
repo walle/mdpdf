@@ -108,11 +108,15 @@ void write_html(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet) {
 	if (stylesheet && strlen(stylesheet) > 0) {
 		FILE *s = fopen(stylesheet, "r");
 		if (s == NULL) {
-			fprintf(stderr, "Could not open %s for reading. Skipping user supplied styles.\n", stylesheet);
+			fprintf(stderr,
+				"Could not open %s for reading. Skipping user supplied styles.\n",
+				stylesheet);
 		} else {
-			char c;
-			while((c = fgetc(s)) != EOF) {
-				fputc(c, out);
+			const int buffer_size = 4096;
+			char buffer[buffer_size];
+			int n;
+			while ((n = fread(buffer, 1, buffer_size, s)) > 0) {
+        fwrite(buffer, 1, n, out);
 			}
 			fclose(s);
 		}
