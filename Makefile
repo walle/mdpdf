@@ -1,9 +1,8 @@
 TARGET = mdpdf
-LIBS = -lwkhtmltox -lhoedown -L ./ -L/usr/lib/x86_64-linux-gnu -lQtWebKit -lQtSvg -lQtXmlPatterns -lQtGui -lQtNetwork -lQtCore -lpthread -lstdc++
+LIBS = -lwkhtmltox -L/lib -lhoedown -L/usr/local/lib -L/usr/lib/x86_64-linux-gnu -lQtWebKit -lQtSvg -lQtXmlPatterns -lQtGui -lQtNetwork -lQtCore -lpthread -lstdc++
 CC = gcc
-CFLAGS=-g -O3 -Wall -Wextra -Wno-unused-parameter -fPIC -Ilib/wkhtmltopdf/include -Ilib/hoedown/src
+CFLAGS=-g -O3 -Wall -Wextra -Wno-unused-parameter -fPIC -I/include -I/usr/local/include
 LDFLAGS=-g -O3 -Wall -Werror
-OBJLIBS	= libhoedown.a libwkhtmltox.a
 PREFIX ?= /usr/local
 BINPREFIX ?= "$(PREFIX)/bin"
 MANPREFIX ?= "$(PREFIX)/share/man/man1"
@@ -31,20 +30,12 @@ html_data.h:
 	-echo "" >> html_data.h
 	-echo "#endif" >> html_data.h
 
-libhoedown.a:
-	cd lib/hoedown; make libhoedown.a
-	cp lib/hoedown/libhoedown.a ./
-
-libwkhtmltox.a:
-	cd lib/wkhtmltopdf; qmake wkhtmltopdf.pro; make; cd src/lib; make staticlib;
-	cp lib/wkhtmltopdf/bin/libwkhtmltox.a ./
-
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
-$(TARGET): html_data.h $(OBJECTS) $(OBJLIBS)
+$(TARGET): html_data.h $(OBJECTS)
 	$(CC) $(OBJECTS) $(CFLAGS) $(LIBS) -o $@
 
 clean: clean-dist

@@ -7,6 +7,10 @@ markdown files that get concatinated in the output PDF.
 Similar to [gimli](https://github.com/walle/gimli) but tries to be a better *nix citizen.
 Should also be a bit faster, but is not benchmarked. Not all features of gimli are implemented.
 
+## Dependencies
+
+mdpdf requires [hoedown](https://github.com/hoedown/hoedown) and [wkhtmltopdf](https://github.com/wkhtmltopdf/wkhtmltopdf/) shared libraries to be installed.
+
 ## Usage
 
 ```
@@ -27,17 +31,13 @@ Add css rules with with --stylesheet pointing to a file.
 
 ### Install from source
 
-If you have a build environment ready it's easy to install the application.
-First make sure you have the dependencies wkhtmltopdf needs, you can see
-them for your platform in the [build.py file](https://github.com/wkhtmltopdf/wkhtmltopdf/blob/a902777385100610ec3d0d30a9c1e904d318d1a5/scripts/build.py#L200) in the wkhtmltopdf repository. The example linked to is for Ubuntu.
+mdpdf requires the shared libraries for [hoedown](https://github.com/hoedown/hoedown) and [wkhtmltopdf](https://github.com/wkhtmltopdf/wkhtmltopdf/) to be installed.
+Follow the build instructions in the libraries to install them.
+*NOTICE* the hoedown library installs to `/usr/local/lib/` as default and this might not be on your `LD_LIBRARY_PATH` if not you can add it with `LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib` before running the application.
 
 When you have the dependencies, clone the repository and cd the repository directory.
 Use the command `make` to build the application. If everything works, you can run
 the tests with `make test`. If the tests pass use `make install` to install, may require sudo.
-
-### Install compiled versions
-
-For now only compiled releases exists for linux-86_64. You can download the binary from the [releases page on github](https://github.com/walle/mdpdf/releases). Put it somewhere on your path to make it usable.
 
 ## License
 

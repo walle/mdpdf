@@ -4,8 +4,8 @@
 #include <getopt.h>
 
 /* hoedown */
-#include "document.h"
-#include "html.h"
+#include "hoedown/document.h"
+#include "hoedown/html.h"
 
 /* wkhtmltopdf */
 #include <wkhtmltox/pdf.h>
