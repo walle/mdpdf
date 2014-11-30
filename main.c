@@ -101,14 +101,10 @@ int read_file_to_buffer(hoedown_buffer *ib, FILE *in) {
 
 /*
  * Writes the data in the buffer ob to the file out.
- * If verbose is true the output will be printed on stdout.
  * If stylesheets points to a valid CSS file it's contents will be added to the style of the page.
  */
-void write_html_to_file(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet) {
+void write_html(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet) {
 	fprintf(out, "%s\n", HTML_HEAD_START);
-	if (verbose) {
-		fprintf(stdout, "%s\n", HTML_HEAD_START);
-	}
 	if (stylesheet && strlen(stylesheet) > 0) {
 		FILE *s = fopen(stylesheet, "r");
 		if (s == NULL) {
@@ -122,19 +118,8 @@ void write_html_to_file(FILE *out, hoedown_buffer *ob, bool verbose, char *style
 		}
 	}
 	fprintf(out, "%s\n", HTML_HEAD_END);
-	if (verbose) {
-		fprintf(stdout, "%s\n", HTML_HEAD_END);
-	}
-
-	(void)fwrite(ob->data, 1, ob->size, out);
-	if (verbose) {
-		(void)fwrite(ob->data, 1, ob->size, stdout);
-	}
-
+	fwrite(ob->data, 1, ob->size, out);
 	fprintf(out, "%s\n", HTML_END);
-	if (verbose) {
-		fprintf(stdout, "%s\n", HTML_END);
-	}
 }
 
 int main(int argc, char **argv) {
@@ -246,8 +231,12 @@ int main(int argc, char **argv) {
 	sprintf(filePath, "file://%s", nameBuff);
 
 	/* Write tmp html output to file */
-	write_html_to_file(out, ob, verbose, stylesheet);
+	write_html(out, ob, verbose, stylesheet);
 	fclose(out);
+
+	if (verbose) {
+		write_html(stdout, ob, verbose, stylesheet);
+	}
 
 	/* Cleanup hoedown */
 	hoedown_buffer_free(ob);
