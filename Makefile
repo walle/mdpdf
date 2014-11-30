@@ -7,7 +7,7 @@ OBJLIBS	= libhoedown.a libwkhtmltox.a
 PREFIX ?= /usr/local
 BINPREFIX ?= "$(PREFIX)/bin"
 MANPREFIX ?= "$(PREFIX)/share/man/man1"
-VERSION="1.0.0"
+VERSION="1.0.1"
 DIST="$(TARGET)-$(VERSION)"
 DIST_SRC="$(TARGET)-src-$(VERSION)"
 

@@ -13,7 +13,7 @@
 /* mdpdf */
 #include "html_data.h"
 
-#define MDPDF_VERSION "1.0.0"
+#define MDPDF_VERSION "1.0.1"
 
 #define HOEDOWN_IUNIT 1024
 #define HOEDOWN_OUNIT 64
@@ -271,7 +271,6 @@ int main(int argc, char **argv) {
 	hoedown_document_free(document);
 	hoedown_html_renderer_free(renderer);
 
-/* start pdf generating */
 	generate_pdf(filePath, outname);
 	unlink(nameBuff);
 
