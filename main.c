@@ -14,6 +14,7 @@
 #include "html_data.h"
 
 #define MDPDF_VERSION "1.0.1"
+#define MDPDF_PAGE_BREAK "\n\n<div class=\"page-break\"></div>\n\n"
 
 #define HOEDOWN_IUNIT 4096
 #define HOEDOWN_OUNIT 2048
@@ -194,7 +195,7 @@ int main(int argc, char **argv) {
 			read_file_to_buffer(ib, ir);
 			if (page_break_between_sources) {
 				if (i < n_files-1) {
-					hoedown_buffer_puts(ib, "\n\n<div class=\"page-break\"></div>\n\n");
+					hoedown_buffer_puts(ib, MDPDF_PAGE_BREAK);
 				}
 			}
 			fclose(ir);
