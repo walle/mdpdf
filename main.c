@@ -86,17 +86,19 @@ void generate_pdf(const char *input, const char *output) {
 
 /*
  * Read the whole file in into the buffer ib.
- * Returns a error code if one occurs.
+ * Prints error and exists if an error occurs.
  */
-int read_file_to_buffer(hoedown_buffer *ib, FILE *in) {
+void read_file_to_buffer(hoedown_buffer *ib, FILE *in) {
 	while (!feof(in)) {
 		if (ferror(in)) {
-			return 5;
+			fprintf(stderr, "I/O errors found while reading input.\n");
+			hoedown_buffer_free(ib);
+			fclose(in);
+			exit(1);
 		}
 		hoedown_buffer_grow(ib, ib->size + HOEDOWN_IUNIT);
 		ib->size += fread(ib->data + ib->size, 1, HOEDOWN_IUNIT, in);
 	}
-	return 0;
 }
 
 /*
@@ -183,25 +185,13 @@ int main(int argc, char **argv) {
 	/* Read SOURCE(s) */
 
 	hoedown_buffer *ib = hoedown_buffer_new(HOEDOWN_IUNIT);
-	if (n_files == 1) {
-		int error_code = read_file_to_buffer(ib, in);
-		if (error_code > 0) {
-			fprintf(stderr, "I/O errors found while reading input.\n");
-			hoedown_buffer_free(ib);
-			fclose(in);
-			exit(error_code);
-		}
+	if (n_files == 1) { /* Reading from stdin */
+		read_file_to_buffer(ib, in); /* may exit on error reading input */
 	} else {
 		int i;
-		for (i = 0; i < n_files-1; i++) {
+		for (i = 0; i < n_files-1; i++) { /* Reading from one or more files */
 			FILE *ir = fopen(file[i], "r");
-			int error_code = read_file_to_buffer(ib, ir);
-			if (error_code > 0) {
-				fprintf(stderr, "I/O errors found while reading input.\n");
-				hoedown_buffer_free(ib);
-				fclose(ir);
-				exit(error_code);
-			}
+			read_file_to_buffer(ib, ir);
 			if (page_break_between_sources) {
 				if (i < n_files-1) {
 					hoedown_buffer_puts(ib, "\n\n<div class=\"page-break\"></div>\n\n");
