@@ -223,11 +223,8 @@ int main(int argc, char **argv) {
 	char nameBuff[23];
 	char filePath[30];
 	int filedesc = -1;
-	memset(nameBuff, 0, sizeof(nameBuff));
-	memset(filePath, 0, sizeof(filePath));
 
 	strncpy(nameBuff, "/tmp/mdpdf-XXXXXX.html", 22);
-
 	filedesc = mkstemps(nameBuff, 5);
 	FILE *out = fdopen(filedesc, "w");
 
