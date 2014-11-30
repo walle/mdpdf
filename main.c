@@ -211,8 +211,8 @@ int main(int argc, char **argv) {
 	fclose(in);
 
 	/* Generate a tmpfile for html output */
-	char nameBuff[23];
-	char filePath[30];
+	char nameBuff[23] = "";
+	char filePath[30] = "";
 	int filedesc = -1;
 
 	strncpy(nameBuff, "/tmp/mdpdf-XXXXXX.html", 22);
