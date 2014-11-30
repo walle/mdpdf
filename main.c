@@ -129,6 +129,19 @@ void write_html(FILE *out, hoedown_buffer *ob, bool verbose, char *stylesheet) {
 	fprintf(out, "%s\n", HTML_END);
 }
 
+/*
+ * Get a portable tmp dir, defaults to /tmp if no ENV variable is set.
+ * Cody by http://codereview.stackexchange.com/users/27623/syb0rg
+ * From http://codereview.stackexchange.com/a/71198/58784
+ */
+const char* get_tmp_dir(void) {
+	char *tmpdir = NULL;
+	if ((tmpdir = getenv("TEMP"))) return tmpdir;
+	else if ((tmpdir = getenv("TMP"))) return tmpdir;
+	else if ((tmpdir = getenv("TMPDIR"))) return tmpdir;
+	else return "/tmp/";
+}
+
 int main(int argc, char **argv) {
 	int c;
 	int n_files;
@@ -211,11 +224,12 @@ int main(int argc, char **argv) {
 	fclose(in);
 
 	/* Generate a tmpfile for html output */
-	char nameBuff[23] = "";
-	char filePath[30] = "";
+	char nameBuff[FILENAME_MAX] = "";
+	char filePath[FILENAME_MAX] = "";
 	int filedesc = -1;
 
-	strncpy(nameBuff, "/tmp/mdpdf-XXXXXX.html", 22);
+	const char *fileRoot = get_tmp_dir();
+	snprintf(nameBuff, FILENAME_MAX, "%smdpdf-XXXXXXX.html", fileRoot);
 	filedesc = mkstemps(nameBuff, 5);
 	FILE *out = fdopen(filedesc, "w");
 
