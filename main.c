@@ -177,6 +177,10 @@ void render_markdown(hoedown_buffer *ib, hoedown_buffer *ob) {
 	hoedown_html_renderer_free(renderer);
 }
 
+/*
+ * Create a tmp file and write html output to it.
+ * Sets the filePath used by wkhtml to read the html.
+ */
 void write_html_to_tmp_file(char *nameBuff, char *filePath, hoedown_buffer *ob, bool verbose, char *stylesheet) {
 	int filedesc = -1;
 	const char *fileRoot = get_tmp_dir();
