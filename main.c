@@ -95,7 +95,7 @@ void read_file_to_buffer(hoedown_buffer *ib, FILE *in) {
 			fprintf(stderr, "I/O errors found while reading input.\n");
 			hoedown_buffer_free(ib);
 			fclose(in);
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		hoedown_buffer_grow(ib, ib->size + HOEDOWN_IUNIT);
 		ib->size += fread(ib->data + ib->size, 1, HOEDOWN_IUNIT, in);
