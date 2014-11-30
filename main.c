@@ -142,13 +142,73 @@ const char* get_tmp_dir(void) {
 	else return "/tmp/";
 }
 
+/*
+ * Read all markdown input to buffer.
+ * Prints error and exists if an error occurs.
+ */
+void read_markdown(hoedown_buffer *ib, int n_files, char **file, FILE *in) {
+	if (n_files == 1) { /* Reading from stdin */
+		read_file_to_buffer(ib, in); /* may exit on error reading input */
+		fclose(in);
+	} else {
+		int i;
+		for (i = 0; i < n_files-1; i++) { /* Reading from one or more files */
+			FILE *ir = fopen(file[i], "r");
+			read_file_to_buffer(ib, ir);
+			if (page_break_between_sources) {
+				if (i < n_files-1) {
+					hoedown_buffer_puts(ib, MDPDF_PAGE_BREAK);
+				}
+			}
+			fclose(ir);
+		}
+	}
+}
+
+/*
+ * Render markdown in input buffer ib to output buffer ob.
+ */
+void render_markdown(hoedown_buffer *ib, hoedown_buffer *ob) {
+	hoedown_renderer *renderer = hoedown_html_renderer_new(0, 0);
+	hoedown_document *document = hoedown_document_new(renderer, HOEDOWN_EXTENSIONS, HOEDOWN_MAX_NESTING);
+	hoedown_document_render(document, ob, ib->data, ib->size);
+	hoedown_buffer_free(ib);
+	hoedown_document_free(document);
+	hoedown_html_renderer_free(renderer);
+}
+
+void write_html_to_tmp_file(char *nameBuff, char *filePath, hoedown_buffer *ob, bool verbose, char *stylesheet) {
+	int filedesc = -1;
+	const char *fileRoot = get_tmp_dir();
+
+	snprintf(nameBuff, FILENAME_MAX, "%smdpdf-XXXXXXX.html", fileRoot);
+	filedesc = mkstemps(nameBuff, 5);
+	FILE *out = fdopen(filedesc, "w");
+
+	sprintf(filePath, "file://%s", nameBuff);
+
+	write_html(out, ob, verbose, stylesheet);
+	fclose(out);
+
+	if (verbose) {
+		write_html(stdout, ob, verbose, stylesheet);
+	}
+
+	hoedown_buffer_free(ob);
+}
+
 int main(int argc, char **argv) {
-	int c;
-	int n_files;
-	char **file;
+	int c = 0;
+	int n_files = 0;
+	char **file = NULL;
 	FILE *in = stdin;
 	char *outname = NULL;
+	hoedown_buffer *ib = hoedown_buffer_new(HOEDOWN_IUNIT);
+	hoedown_buffer *ob = hoedown_buffer_new(HOEDOWN_OUNIT);
+	char nameBuff[FILENAME_MAX] = "";
+	char filePath[FILENAME_MAX] = "";
 
+	/* Parse arguments */
 	while ((c = getopt_long (argc, argv, "fpvhVs:", long_options, NULL)) != -1) {
 		switch (c) {
 			case 'f':
@@ -177,6 +237,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	/* Validate arguments */
 	n_files = argc - optind;
 	file = argv + optind;
 
@@ -196,61 +257,13 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	/* Read SOURCE(s) */
-
-	hoedown_buffer *ib = hoedown_buffer_new(HOEDOWN_IUNIT);
-	if (n_files == 1) { /* Reading from stdin */
-		read_file_to_buffer(ib, in); /* may exit on error reading input */
-	} else {
-		int i;
-		for (i = 0; i < n_files-1; i++) { /* Reading from one or more files */
-			FILE *ir = fopen(file[i], "r");
-			read_file_to_buffer(ib, ir);
-			if (page_break_between_sources) {
-				if (i < n_files-1) {
-					hoedown_buffer_puts(ib, MDPDF_PAGE_BREAK);
-				}
-			}
-			fclose(ir);
-		}
-	}
-
-	hoedown_renderer *renderer = hoedown_html_renderer_new(0, 0);
-	hoedown_document *document = hoedown_document_new(renderer, HOEDOWN_EXTENSIONS, HOEDOWN_MAX_NESTING);
-
-	hoedown_buffer *ob = hoedown_buffer_new(HOEDOWN_OUNIT);
-	hoedown_document_render(document, ob, ib->data, ib->size);
-	hoedown_buffer_free(ib);
-	fclose(in);
-
-	/* Generate a tmpfile for html output */
-	char nameBuff[FILENAME_MAX] = "";
-	char filePath[FILENAME_MAX] = "";
-	int filedesc = -1;
-
-	const char *fileRoot = get_tmp_dir();
-	snprintf(nameBuff, FILENAME_MAX, "%smdpdf-XXXXXXX.html", fileRoot);
-	filedesc = mkstemps(nameBuff, 5);
-	FILE *out = fdopen(filedesc, "w");
-
-	/* Use tmp file to build a file:// path for wkhtml */
-	sprintf(filePath, "file://%s", nameBuff);
-
-	/* Write tmp html output to file */
-	write_html(out, ob, verbose, stylesheet);
-	fclose(out);
-
-	if (verbose) {
-		write_html(stdout, ob, verbose, stylesheet);
-	}
-
-	/* Cleanup hoedown */
-	hoedown_buffer_free(ob);
-	hoedown_document_free(document);
-	hoedown_html_renderer_free(renderer);
-
+	/* Main logic */
+	read_markdown(ib, n_files, file, in);
+	render_markdown(ib, ob);
+	write_html_to_tmp_file(nameBuff, filePath, ob, verbose, stylesheet);
 	generate_pdf(filePath, outname);
-	unlink(nameBuff);
 
+	/* Cleanup */
+	unlink(nameBuff);
 	return EXIT_SUCCESS;
 }
