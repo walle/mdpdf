@@ -28,10 +28,10 @@ pass() {
 # Output a message and return with no error when all tests has passed
 finished() {
   echo ''
-  if [[ $FAILED -ne 1 ]]; then
-    echo 'All tests passed'
-  else
+  if [[ $FAILED -ne 0 ]]; then
     echo 'There were failed tests'
+  else
+    echo 'All tests passed'
   fi
   exit $FAILED
 }
