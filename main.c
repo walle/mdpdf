@@ -203,7 +203,7 @@ void write_html_to_tmp_file(char *nameBuff, char *filePath, hoedown_buffer *ob, 
 }
 
 int main(int argc, char **argv) {
-	int c = 0;
+	int c = -1;
 	int n_files = 0;
 	char **file = NULL;
 	FILE *in = stdin;
