@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <libgen.h>
 #include <getopt.h>
 #include <unistd.h>
 
@@ -58,13 +62,78 @@ Add css rules with with --stylesheet pointing to a file.\n\n\
 }
 
 /*
+ * Function with behaviour like `mkdir -p'
+ * http://niallohiggins.com/2009/01/08/mkpath-mkdir-p-alike-in-c-for-unix/
+ */
+int mkpath(const char *s, mode_t mode){
+	char *q, *r = NULL, *path = NULL, *up = NULL;
+	int rv;
+
+	rv = -1;
+	if (strcmp(s, ".") == 0 || strcmp(s, "/") == 0) {
+		return (0);
+	}
+
+	if ((path = strdup(s)) == NULL) {
+		exit(1);
+	}
+
+	if ((q = strdup(s)) == NULL) {
+		exit(1);
+	}
+
+	if ((r = dirname(q)) == NULL) {
+		goto out;
+	}
+
+	if ((up = strdup(r)) == NULL) {
+		exit(1);
+	}
+
+	if ((mkpath(up, mode) == -1) && (errno != EEXIST)) {
+		goto out;
+	}
+
+	if ((mkdir(path, mode) == -1) && (errno != EEXIST)) {
+		rv = -1;
+	} else {
+		rv = 0;
+	}
+
+	out:
+		if (up != NULL) {
+			free(up);
+		}
+		free(q);
+		free(path);
+		return (rv);
+}
+
+/*
+ * Create a directory for the file in file_path if it does not already exist.
+ * Returns error code if unsuccessful.
+ */
+int create_output_directory(const char *file_path) {
+	char *path = strdup(file_path);
+	char *dir = dirname(path);
+	return mkpath(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+
+/*
  * Create a pdf from html.
  * Reads the html file in input_html_file_path and writes a pdf to output_pdf_path.
+ * Tries to create a directory for the pdf file, returns without creating pdf if it can't create one.
  */
 void generate_pdf(const char *input_html_file_path, const char *output_pdf_path) {
 	wkhtmltopdf_global_settings * gs;
 	wkhtmltopdf_object_settings * os;
 	wkhtmltopdf_converter * conv;
+
+	int err = create_output_directory(output_pdf_path);
+	if (err != 0 && err != EEXIST) {
+		fprintf(stderr, "Could not create directory for %s\n", output_pdf_path);
+		return;
+	}
 
 	wkhtmltopdf_init(false);
 

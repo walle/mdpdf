@@ -36,9 +36,6 @@ finished() {
   exit $FAILED
 }
 
-# Create a tmp dir we can output files to
-mkdir tmp
-
 # Test that error message and usage is printed if no output
 ./mdpdf > /dev/null 2>&1
 STATUS=$?
@@ -71,6 +68,7 @@ fi
 pass
 
 # Test -s flag
+mkdir tmp 2> /dev/null # Make sure we have a tmp dir
 echo "body { background: #f00; }" > tmp/style.css
 ./mdpdf -s tmp/style.css README.md tmp/test2.pdf
 if [ ! -f tmp/test2.pdf ]; then
