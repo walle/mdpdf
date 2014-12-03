@@ -18,7 +18,7 @@
 /* mdpdf */
 #include "html_data.h"
 
-#define MDPDF_VERSION "1.0.1"
+#define MDPDF_VERSION "1.1.0"
 #define MDPDF_PAGE_BREAK "\n\n<div class=\"page-break\"></div>\n\n"
 
 #define HOEDOWN_IUNIT 4096
